@@ -1,4 +1,3 @@
-# chrome-tab-group-extension/chrome-tab-group-extension/README.md
 
 # Chrome Tab Group Extension
 
