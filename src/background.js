@@ -4,17 +4,17 @@ chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
 // Create context menu items when extension is installed
 chrome.runtime.onInstalled.addListener(() => {
   // Extension icon context menu
-  chrome.contextMenus.create({
-    id: "showSidebar",
-    title: "Show Tab Groups Panel",
-    contexts: ["action"]
-  });
+//   chrome.contextMenus.create({
+//     id: "showSidebar",
+//     title: "Show Tab Groups Panel",
+//     contexts: ["action"]
+//   });
 
-  // Context menu for tabs
+  // Context menu for pages
   chrome.contextMenus.create({
     id: "addWindowToGroup",
     title: "Add window to tab group",
-    contexts: ["all"]
+    contexts: ["page"]
   });
 });
 
