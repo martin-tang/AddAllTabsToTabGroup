@@ -136,9 +136,15 @@ async function buildTree() {
 
         // Add grouped tabs first
         for (const [groupId, tabs] of groupedTabs) {
-            const group = await chrome.tabGroups.get(groupId);
-            const groupElement = createTabGroupElement(group, tabs);
-            tabList.appendChild(groupElement);
+            try {
+                const group = await chrome.tabGroups.get(groupId);
+                const groupElement = createTabGroupElement(group, tabs);
+                tabList.appendChild(groupElement);
+            } catch (error) {
+                console.warn(`Group ${groupId} no longer exists, skipping...`);
+                // Add these tabs to ungrouped since their group is gone
+                ungroupedTabs.push(...tabs);
+            }
         }
 
         // Add ungrouped tabs
@@ -152,12 +158,24 @@ async function buildTree() {
             windowElement.addEventListener('click', async (e) => {
                 // Only create group if clicking the window item itself or header
                 if (e.target === windowElement || e.target === windowHeader) {
-                    // First ungroup any grouped tabs
-                    for (const [groupId, tabs] of groupedTabs) {
-                        await chrome.tabs.ungroup(tabs.map(tab => tab.id));
+                    try {
+                        // Collect all tab IDs first
+                        const allTabIds = window.tabs.map(tab => tab.id);
+                        
+                        // Ungroup any grouped tabs in a single operation
+                        const groupedTabIds = window.tabs
+                            .filter(tab => tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE)
+                            .map(tab => tab.id);
+                        
+                        if (groupedTabIds.length > 0) {
+                            await chrome.tabs.ungroup(groupedTabIds);
+                        }
+
+                        // Create new group with all tabs
+                        await createTabGroup(window.id, window.tabs);
+                    } catch (error) {
+                        console.error('Error combining groups:', error);
                     }
-                    // Now create a new group with all tabs
-                    createTabGroup(window.id, window.tabs);
                 }
             });
         }
