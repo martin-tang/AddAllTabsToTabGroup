@@ -2,13 +2,12 @@
   "manifest_version": 3,
   "name": "Add All Tabs to Tab Group",
   "version": "1.0",
-  "description": "Convert Chrome windows to Tab Groups",
+  "description": "One Click Window to TabGroup",
   "permissions": [
     "tabs",
     "tabGroups",
     "sidePanel",
     "windows",
-    "storage",
     "contextMenus"
   ],
   "background": {
