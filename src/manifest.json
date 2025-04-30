@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Add All Tabs to Tab Group",
-  "version": "1.0",
-  "description": "One Click Window to TabGroup",
+  "version": "1.1",
+  "description": "Turn Chrome Window into Tab Group in 1 click",
   "permissions": [
     "tabs",
     "tabGroups",

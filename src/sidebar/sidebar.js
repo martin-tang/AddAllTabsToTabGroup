@@ -20,6 +20,19 @@ function applyColorScheme() {
     document.head.appendChild(style);
 }
 
+// Debounce function to prevent multiple rapid calls
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 // Get random color from Chrome's supported colors
 function getRandomColor() {
     const colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan'];
@@ -62,6 +75,21 @@ function createTabGroupElement(group, tabs) {
     header.appendChild(colorDot);
     header.appendChild(title);
     groupElement.appendChild(header);
+    
+    // Add click handler to ungroup tabs when clicking the header
+    header.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Prevent window click handler from firing
+        try {
+            const tabIds = tabs.map(tab => tab.id);
+            await chrome.tabs.ungroup(tabIds);
+            // Give Chrome a moment to update its internal state
+            setTimeout(async () => {
+                await buildTree();
+            }, 100);
+        } catch (error) {
+            console.error('Error ungrouping tabs:', error);
+        }
+    });
     
     const tabList = document.createElement('div');
     tabList.className = 'tab-list';
@@ -201,21 +229,28 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
     applyColorScheme();
 });
 
+// Debounced buildTree function
+const debouncedBuildTree = debounce(buildTree, 150);
+
 // Listen for tab changes
-chrome.tabs.onCreated.addListener(() => buildTree());
-chrome.tabs.onRemoved.addListener(() => buildTree());
+chrome.tabs.onCreated.addListener(debouncedBuildTree);
+chrome.tabs.onRemoved.addListener(debouncedBuildTree);
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.title || changeInfo.favIconUrl) {
-        buildTree();
+        debouncedBuildTree();
     }
 });
 
 // Listen for tab group changes
-chrome.tabGroups.onCreated.addListener(() => buildTree());
-chrome.tabGroups.onUpdated.addListener(() => buildTree());
-chrome.tabGroups.onRemoved.addListener(() => buildTree());
+chrome.tabGroups.onCreated.addListener(debouncedBuildTree);
+chrome.tabGroups.onUpdated.addListener(debouncedBuildTree);
+chrome.tabGroups.onRemoved.addListener(debouncedBuildTree);
 
 // Listen for window changes
-chrome.windows.onCreated.addListener(() => buildTree());
-chrome.windows.onRemoved.addListener(() => buildTree());
-chrome.windows.onFocusChanged.addListener(() => buildTree());
+chrome.windows.onCreated.addListener(debouncedBuildTree);
+chrome.windows.onRemoved.addListener(debouncedBuildTree);
+chrome.windows.onFocusChanged.addListener((windowId) => {
+    if (windowId !== chrome.windows.WINDOW_ID_NONE) {
+        debouncedBuildTree();
+    }
+});
