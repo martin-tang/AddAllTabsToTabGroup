@@ -8,7 +8,7 @@ Adds function:
 
 ## Installation
 
-1. Download the extension from the Chrome Web Store: LINK_TO_BE_ADDED_HERE
+1. Download the extension from the Chrome Web Store: https://chromewebstore.google.com/detail/add-all-tabs-to-tab-group/kkbdihaoolaigbnbahkgahpapdgkkdji
 
 ## Usage
 
